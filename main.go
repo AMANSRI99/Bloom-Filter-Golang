@@ -22,13 +22,13 @@ func murmurhash(key string, size int32) int32 {
 }
 
 type BloomFilter struct {
-	filter []bool
+	filter []byte
 	size   int32
 }
 
 func NewBloomFilter(size int32) *BloomFilter {
 	return &BloomFilter{
-		filter: make([]bool, size),
+		filter: make([]byte, size),
 		size:   size,
 	}
 
@@ -36,13 +36,13 @@ func NewBloomFilter(size int32) *BloomFilter {
 
 func (b *BloomFilter) Add(key string) {
 	idx := murmurhash(key, b.size)
-	b.filter[idx] = true
+	b.filter[idx/8] = b.filter[idx/8] | (1 << (idx % 8))
 	//fmt.Println("Wrote", key, "to", idx)
 }
 
 func (b *BloomFilter) Exists(key string) bool {
 	idx := murmurhash(key, b.size)
-	return b.filter[idx]
+	return b.filter[idx/8]&(1<<(idx%8)) != 0
 }
 
 func (b *BloomFilter) Print() {
